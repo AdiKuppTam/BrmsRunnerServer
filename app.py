@@ -1,24 +1,21 @@
+import os
 import flask
 import json
 import pandas as pd
 import zipfile
-import threading
 import utils
-from firebase_admin import credentials, initialize_app, storage, firestore
 from flask import render_template, request, redirect, flash, send_file
 import __data__ as data
+from pymongo import MongoClient
+from constants import Constants
+from flask_mongoengine import MongoEngine
+
+
+conn_str = os.environ[Constants.CONNECTION_STRING]
+client = MongoClient(conn_str)
+db = client.test
 
 app = flask.Flask(data.__app_name__)
-app.config.update(
-    prog=f'{data.__name__} v{data.__version__}',
-    author=data.__author__
-)
-
-cred = credentials.Certificate("popup-firebase.json")
-initialize_app(cred, {'storageBucket': 'popup-965c9.appspot.com'})
-
-bucket = storage.bucket()
-db = firestore.client()
 
 
 @app.route('/experiment/<path:path>')
@@ -52,7 +49,7 @@ def dashboard(uid):
 def delete():
     experiment_id = request.json.get("value")
     experiment_name = db.collection(u'Experiments').document(experiment_id).get().to_dict()["name"]
-    utils.delete_stimulus_folder(bucket, experiment_name)
+    # utils.delete_stimulus_folder(bucket, experiment_name)
     db.collection(u'Experiments').document(experiment_id).delete()
 
 
@@ -124,15 +121,16 @@ def get_experiment(experiment_id):
         try_count = 0
         while try_count < 5:
             try:
-                if experiment:
-                    timeline = utils.organize_by_blocks(experiment['timeline'],
-                                                        experiment['count'],
-                                                        bucket,
-                                                        experiment['name'])
-                    return render_template('experiment_html.html',
-                                           title='Experiment',
-                                           timeline=timeline,
-                                           background_color=experiment['background_color'])
+                print("hello")
+                # if experiment:
+                #     timeline = utils.organize_by_blocks(experiment['timeline'],
+                #                                         experiment['count'],
+                #                                         bucket,
+                #                                         experiment['name'])
+                #     return render_template('experiment_html.html',
+                #                            title='Experiment',
+                #                            timeline=timeline,
+                #                            background_color=experiment['background_color'])
             except Exception as e:
                 print("Error: " + str(e))
                 continue
@@ -184,9 +182,9 @@ def upload_images_to_experiment():
             if name is not None:
                 extract_folder = "zip_folder/"
                 zipfile.ZipFile(file).extractall(extract_folder)
-                x = threading.Thread(target=utils.extract_and_upload_stimulus,
-                                     args=(bucket, extract_folder, name,))
-                x.start()
+                # x = threading.Thread(target=utils.extract_and_upload_stimulus,
+                #                      args=(bucket, extract_folder, name,))
+                # x.start()
 
     return render_template("uploadImages.html", title="Add Stimulus")
 

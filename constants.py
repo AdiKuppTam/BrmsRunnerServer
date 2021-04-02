@@ -1,0 +1,2 @@
+class Constants:
+    CONNECTION_STRING = "CONNECTION_STRING"
