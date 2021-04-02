@@ -1,31 +1,62 @@
+import ast
 import os
 import flask
 import json
 import pandas as pd
 import zipfile
 import utils
-from flask import render_template, request, redirect, flash, send_file
+from flask import render_template, request, redirect, flash, send_file, Response, jsonify
 import __data__ as data
 from pymongo import MongoClient
-from constants import Constants
-from flask_mongoengine import MongoEngine
-
-
-conn_str = os.environ[Constants.CONNECTION_STRING]
-client = MongoClient(conn_str)
-db = client.test
+from constants import Constants, EnvironmentVariables
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 
 app = flask.Flask(data.__app_name__)
+jwt = JWTManager(app)
+app.config[Constants.JWT_SECRET_KEY] = EnvironmentVariables.SECRET_KEY
+
+conn_str = os.environ[EnvironmentVariables.CONNECTION_STRING]
+client = MongoClient(conn_str)
+db = client.test
+user = db["User"]
+
+
+@app.route("/register", methods=["POST"])
+def register():
+    email = request.form["email"]
+    # test = User.query.filter_by(email=email).first()
+    test = user.find_one({"email": email})
+    if test:
+        return jsonify(message="User Already Exist"), 409
+    else:
+        first_name = request.form["first_name"]
+        last_name = request.form["last_name"]
+        password = request.form["password"]
+        user_info = dict(first_name=first_name, last_name=last_name, email=email, password=password)
+        user.insert_one(user_info)
+        return jsonify(message="User added successfully"), 201
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    if request.is_json:
+        email = request.json["email"]
+        password = request.json["password"]
+    else:
+        email = request.form["email"]
+        password = request.form["password"]
+
+    test = user.find_one({"email": email, "password": password})
+    if test:
+        access_token = create_access_token(identity=email)
+        return jsonify(message="Login Succeeded!", access_token=access_token), 201
+    else:
+        return jsonify(message="Bad Email or Password"), 401
 
 
 @app.route('/experiment/<path:path>')
 def src(path=''):
     return path
-
-
-@app.route('/upload/experiment/<path:path>')
-def src_from_upload(path=''):
-    return redirect("experiment/" + path)
 
 
 @app.route('/experiment/gs://<path:path>')
@@ -34,6 +65,7 @@ def src_gs(path=''):
 
 
 @app.route('/dashboard/<uid>')
+@jwt_required
 def dashboard(uid):
     lst = []
     collection = db.collection(u'Experiments')
@@ -46,6 +78,7 @@ def dashboard(uid):
 
 
 @app.route('/delete_experiment', methods=["POST"])
+@jwt_required
 def delete():
     experiment_id = request.json.get("value")
     experiment_name = db.collection(u'Experiments').document(experiment_id).get().to_dict()["name"]
@@ -53,48 +86,26 @@ def delete():
     db.collection(u'Experiments').document(experiment_id).delete()
 
 
-@app.route("/upload/<uid>", methods=["GET", "POST"])
+@app.route("/upload/<uid>", methods=["POST"])
+@jwt_required
 def upload(uid):
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file_input' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file_input']
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file:
-            result, error_msg = utils.handle_input(db, file, uid)
-            if result:
-                return render_template("upload.html",
-                                       title="Upload",
-                                       value="Experiment Created",
-                                       visible="visible",
-                                       h2color="green",
-                                       link="/experiment/" + str(result),
-                                       linkExist="visibility")
-            elif error_msg:
-                return render_template("upload.html",
-                                       title="Upload",
-                                       visible="visible",
-                                       h2color="red",
-                                       linkExist="collapse",
-                                       value=error_msg)
-
-        return render_template("upload.html",
-                               title="Upload",
-                               visible="visible",
-                               value="There is an error",
-                               linkExist="collapse")
-    else:
-        return render_template("upload.html",
-                               value="-",
-                               visible="hidden",
-                               linkExist="collapse",
-                               title="Upload")
+    # check if the post request has the file part
+    if Constants.UPLOAD_FILE_INPUT not in request.files:
+        flash('No file part')
+        return redirect(request.url)
+    file = request.files[Constants.UPLOAD_FILE_INPUT]
+    # if user does not select file, browser also
+    # submit a empty part without filename
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(request.url)
+    if file:
+        result, error_msg = utils.handle_input(db, file, uid)
+        if result:
+            return Response(status=200)
+        elif error_msg:
+            return Response(status=400, response=error_msg)
+    return Response(status=400)
 
 
 @app.route('/experiment/<experiment_id>', methods=["GET", "POST"])
@@ -140,60 +151,49 @@ def get_experiment(experiment_id):
                                title='Psychology Experiment')
 
 
-@app.route('/export', methods=["GET", "POST"])
+@app.route('/export', methods=["POST"])
+@jwt_required
 def export_experiment_result():
-    if request.method == "POST":
-        user_id = request.values.get("id_input")
-        final_df = pd.DataFrame()
-        try:
-            final_df = utils.collection_to_csv(db.collection(user_id))
-            if request.form.get('removeAllData'):
-                utils.delete_collection(db.collection(user_id),
-                                        utils.get_collection_count(db.collection(user_id).stream()))
-        except Exception as e:
-            print("export bug: " + str(e))
-            flash("There is a problem with export")
-        finally:
-            csv_file_name = "Experiment_Result.csv"
-            final_df.to_csv(csv_file_name, mode='w')
-            return send_file(csv_file_name,
-                             mimetype='text/csv',
-                             attachment_filename=csv_file_name,
-                             as_attachment=True)
-    else:
-        return render_template("export.html", title="Export")
+    user_id = request.values.get("id_input")
+    final_df = pd.DataFrame()
+    try:
+        final_df = utils.collection_to_csv(db.collection(user_id))
+        if request.form.get('removeAllData'):
+            utils.delete_collection(db.collection(user_id),
+                                    utils.get_collection_count(db.collection(user_id).stream()))
+    except Exception as e:
+        print("export bug: " + str(e))
+        flash("There is a problem with export")
+    finally:
+        csv_file_name = "Experiment_Result.csv"
+        final_df.to_csv(csv_file_name, mode='w')
+        return send_file(csv_file_name,
+                         mimetype='text/csv',
+                         attachment_filename=csv_file_name,
+                         as_attachment=True)
 
 
-@app.route('/upload_images', methods=["GET", "POST"])
+@app.route('/upload_images', methods=["POST"])
+@jwt_required
 def upload_images_to_experiment():
-    if request.method == "POST":
-        # check if the post request has the file part
-        if 'imagesInput' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['imagesInput']
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file:
-            name = request.values.get("name_input")
-            if name is not None:
-                extract_folder = "zip_folder/"
-                zipfile.ZipFile(file).extractall(extract_folder)
-                # x = threading.Thread(target=utils.extract_and_upload_stimulus,
-                #                      args=(bucket, extract_folder, name,))
-                # x.start()
-
-    return render_template("uploadImages.html", title="Add Stimulus")
-
-
-@app.route('/details/<experiment_id>')
-def get_experiment_detail(experiment_id):
-    doc_ref = db.collection(u'Experiments').document(experiment_id)
-    experiment = doc_ref.get().to_dict()
-    return render_template("experiment_details.html", title="Details", lst=experiment['timeline'])
+    # check if the post request has the file part
+    if 'imagesInput' not in request.files:
+        flash('No file part')
+        return redirect(request.url)
+    file = request.files['imagesInput']
+    # if user does not select file, browser also
+    # submit a empty part without filename
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(request.url)
+    if file:
+        name = request.values.get("name_input")
+        if name is not None:
+            extract_folder = "zip_folder/"
+            zipfile.ZipFile(file).extractall(extract_folder)
+            # x = threading.Thread(target=utils.extract_and_upload_stimulus,
+            #                      args=(bucket, extract_folder, name,))
+            # x.start()
 
 
 if __name__ == '__main__':

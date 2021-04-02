@@ -1,2 +1,8 @@
 class Constants:
+    UPLOAD_FILE_INPUT = "FILE_INPUT"
+    JWT_SECRET_KEY = "JWT_SECRET_KEY"
+
+
+class EnvironmentVariables:
     CONNECTION_STRING = "CONNECTION_STRING"
+    SECRET_KEY = "SECRET_KEY"
