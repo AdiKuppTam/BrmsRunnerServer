@@ -1,36 +1,13 @@
 import datetime
 import json
+import os
 import random
 from copy import deepcopy
 from itertools import permutations
-import os
+
 import pandas as pd
-from flask import jsonify
 
-LOAD_EXPERIMENT_ERROR = "Load Experiment Error"
-
-
-class PluginNames:
-    bRMS = "bRMS"
-    ImageButton = "image-button-response"
-
-
-class BrmsProperties:
-    SubGroup = "sub_block"
-    StimulusDictionary = "StimulusDictionary"
-    BrmsType = "brms_type"
-    StimulusBlock = "stimulus_block"
-    Count = "count"
-    File = "file"
-    Stimulus = "stimulus"
-    Block = "block"
-    Type = "type"
-
-
-class BrmsTypes:
-    Mix = "mix"
-    Random = "random"
-    Fix = "fix"
+from constants import Errors, PluginNames, BrmsTypes, BrmsProperties
 
 
 def brms_exist(timeline):
@@ -290,7 +267,7 @@ def handle_input(db, experiment_file, uid):
     try:
         result = upload_experiment(db, experiment_file, uid)
     except Exception as e:
-        error_msg = LOAD_EXPERIMENT_ERROR
+        error_msg = Errors.LOAD_EXPERIMENT_ERROR
         print(e)
 
     return result, error_msg
@@ -327,11 +304,6 @@ def upload_experiment(db, experiment_file, uid):
         return doc_ref.id
     except Exception as e:
         print('Failed to upload to ftp: ' + str(e))
-
-
-def serve_content_for_admin(decoded_claims):
-    print('Serving content with claims:', decoded_claims)
-    return jsonify({'status': 'success'})
 
 
 def extract_and_upload_stimulus(bucket, extract_folder, name):

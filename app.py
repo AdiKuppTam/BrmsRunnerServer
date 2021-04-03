@@ -1,40 +1,40 @@
-import ast
-import os
-import flask
 import json
-import pandas as pd
+import os
 import zipfile
-import utils
+
+import flask
+from flask_restful import Api
+import pandas as pd
 from flask import render_template, request, redirect, flash, send_file, Response, jsonify
-import __data__ as data
-from pymongo import MongoClient
-from constants import Constants, EnvironmentVariables
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
+from pymongo import MongoClient
+
+import __data__ as data
+import utils
+from constants import Constants, EnvironmentVariables, DBTables, Errors, Messages
 
 app = flask.Flask(data.__app_name__)
 jwt = JWTManager(app)
-app.config[Constants.JWT_SECRET_KEY] = EnvironmentVariables.SECRET_KEY
+app.config[Constants.JWT_SECRET_KEY] = os.environ[EnvironmentVariables.SECRET_KEY]
 
 conn_str = os.environ[EnvironmentVariables.CONNECTION_STRING]
 client = MongoClient(conn_str)
 db = client.test
-user = db["User"]
+user = db[DBTables.Users]
 
 
 @app.route("/register", methods=["POST"])
 def register():
     email = request.form["email"]
-    # test = User.query.filter_by(email=email).first()
     test = user.find_one({"email": email})
     if test:
-        return jsonify(message="User Already Exist"), 409
+        return jsonify(message=Errors.AuthenticationErrors.UserAlreadyExist), 409
     else:
-        first_name = request.form["first_name"]
-        last_name = request.form["last_name"]
+        user_name = request.form["user_name"]
         password = request.form["password"]
-        user_info = dict(first_name=first_name, last_name=last_name, email=email, password=password)
+        user_info = dict(user_name=user_name, email=email, password=password)
         user.insert_one(user_info)
-        return jsonify(message="User added successfully"), 201
+        return jsonify(message=Messages.UserAddedSuccessfully), 201
 
 
 @app.route("/login", methods=["POST"])
@@ -49,9 +49,9 @@ def login():
     test = user.find_one({"email": email, "password": password})
     if test:
         access_token = create_access_token(identity=email)
-        return jsonify(message="Login Succeeded!", access_token=access_token), 201
+        return jsonify(message=Messages.LoginSucceeded, access_token=access_token), 201
     else:
-        return jsonify(message="Bad Email or Password"), 401
+        return jsonify(message=Errors.AuthenticationErrors.BadEmailOrPassword), 401
 
 
 @app.route('/experiment/<path:path>')
@@ -77,18 +77,9 @@ def dashboard(uid):
     return lst
 
 
-@app.route('/delete_experiment', methods=["POST"])
-@jwt_required
-def delete():
-    experiment_id = request.json.get("value")
-    experiment_name = db.collection(u'Experiments').document(experiment_id).get().to_dict()["name"]
-    # utils.delete_stimulus_folder(bucket, experiment_name)
-    db.collection(u'Experiments').document(experiment_id).delete()
-
-
 @app.route("/upload/<uid>", methods=["POST"])
 @jwt_required
-def upload(uid):
+def upload_experiment(uid):
     # check if the post request has the file part
     if Constants.UPLOAD_FILE_INPUT not in request.files:
         flash('No file part')
@@ -102,10 +93,11 @@ def upload(uid):
     if file:
         result, error_msg = utils.handle_input(db, file, uid)
         if result:
-            return Response(status=200)
+            return jsonify(message=Messages.UserAddedSuccessfully), 201
         elif error_msg:
-            return Response(status=400, response=error_msg)
-    return Response(status=400)
+            return jsonify(message=Messages.UserAddedSuccessfully), 400
+    return jsonify(message=Messages.UserAddedSuccessfully), 400
+
 
 
 @app.route('/experiment/<experiment_id>', methods=["GET", "POST"])
