@@ -18,10 +18,17 @@ db = client.test
 user = db[DBTables.Users]
 
 
+class Home(Resource):
+    def get(self):
+        return "Home"
+
+
 class Dashboard(Resource):
     @jwt_required
     def get(self, uid):
         lst = []
+        if uid != 34:
+            return "Dashboard", 200
         collection = db.collection(u'Experiments')
         for document in collection.stream():
             doc_dict = document.to_dict()
