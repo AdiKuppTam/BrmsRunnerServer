@@ -6,17 +6,13 @@ from flask_restful import Resource
 from pymongo import MongoClient
 
 from constants import Errors, Messages, EnvironmentVariables, DBTables
-
-conn_str = os.environ[EnvironmentVariables.CONNECTION_STRING]
-client = MongoClient(conn_str)
-db = client.test
-user = db[DBTables.Users]
+from dataHandler import DataHandler
 
 
 class Register(Resource):
     def post(self):
         email = request.form["email"]
-        test = user.find_one({"email": email})
+        test = DataHandler().find_user_by_email(email)
         if test:
             return jsonify(message=Errors.AuthenticationErrors.UserAlreadyExist), 409
         else:
