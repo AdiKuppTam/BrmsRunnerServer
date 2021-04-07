@@ -1,10 +1,8 @@
 import os
 
-import flask
 from flask import send_from_directory, Flask
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
-from pydrive.auth import GoogleAuth
 
 import __data__ as data
 from constants import Constants, EnvironmentVariables
@@ -17,9 +15,6 @@ api = Api(app)
 
 jwt = JWTManager(app)
 app.config[Constants.JWT_SECRET_KEY] = os.environ[EnvironmentVariables.SECRET_KEY]
-
-gauth = GoogleAuth()
-print(gauth)
 
 
 @app.route('/experiment/<path:path>')
