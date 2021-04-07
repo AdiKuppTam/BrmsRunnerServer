@@ -28,7 +28,7 @@ class Register(Resource):
 
 
 class Login(Resource):
-    def get(self):
+    def post(self):
         if request.is_json:
             email = request.json["email"]
             password = request.json["password"]
