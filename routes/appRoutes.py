@@ -1,21 +1,13 @@
 import json
-import os
 import zipfile
 
+import pandas as pd
 from flask import request, flash, redirect, jsonify, send_file
 from flask_jwt_extended import jwt_required
-
-import pandas as pd
 from flask_restful import Resource
-from pymongo import MongoClient
 
 import utils
-from constants import Constants, Messages, EnvironmentVariables, DBTables
-
-conn_str = os.environ[EnvironmentVariables.CONNECTION_STRING]
-client = MongoClient(conn_str)
-db = client.test
-user = db[DBTables.Users]
+from constants import Constants, Messages
 
 
 class Home(Resource):
@@ -29,12 +21,6 @@ class Dashboard(Resource):
         lst = []
         if uid != 34:
             return "Dashboard", 200
-        collection = db.collection(u'Experiments')
-        for document in collection.stream():
-            doc_dict = document.to_dict()
-            if "uid" in doc_dict and doc_dict["uid"] == uid:
-                new_doc = [doc_dict["name"], str(document.id), doc_dict["count"]]
-                lst.append(new_doc)
         return lst
 
 
@@ -52,6 +38,7 @@ class UploadExperiment(Resource):
             flash('No selected file')
             return redirect(request.url)
         if file:
+            db = 1
             result, error_msg = utils.handle_input(db, file, uid)
             if result:
                 return jsonify(message=Messages.UserAddedSuccessfully), 201
@@ -91,13 +78,8 @@ class GetExperiment(Resource):
                 to_upload = {
                     "result": loads_value
                 }
+                db = "demo"
                 utils.upload_data(db, to_upload, experiment_id)
-                doc_ref = db.collection(u'Experiments').document(experiment_id)
-                experiment = doc_ref.get().to_dict()
-                update = {
-                    'count': experiment['count'] + 1
-                }
-                doc_ref.update(update)
             except Exception as e:
                 print(e)
 
@@ -106,12 +88,10 @@ class ExportExperimentResult(Resource):
     @jwt_required
     def post(self):
         user_id = request.values.get("id_input")
+        print(user_id)
         final_df = pd.DataFrame()
         try:
-            final_df = utils.collection_to_csv(db.collection(user_id))
-            if request.form.get('removeAllData'):
-                utils.delete_collection(db.collection(user_id),
-                                        utils.get_collection_count(db.collection(user_id).stream()))
+            print(1)
         except Exception as e:
             print("export bug: " + str(e))
             flash("There is a problem with export")
