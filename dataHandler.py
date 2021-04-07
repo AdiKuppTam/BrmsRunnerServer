@@ -19,3 +19,11 @@ class DataHandler:
     def find_user_by_email(self, email):
         user = self._db[DBTables.Users]
         return user.find_one({"email": email})
+
+    def find_user_by_email_and_password(self, email, password):
+        user = self._db[DBTables.Users]
+        return user.find_one({"email": email, "password": password})
+
+    def create_new_user(self, user_info):
+        user = self._db[DBTables.Users]
+        user.insert_one(user_info)
