@@ -9,7 +9,7 @@ class DataHandler:
     def __init__(self):
         conn_str = os.environ[EnvironmentVariables.CONNECTION_STRING]
         self._client = MongoClient(conn_str)
-        self._db = self.client.test
+        self._db = self._client.test
 
     def __new__(cls):
         if not hasattr(cls, 'instance'):
@@ -17,5 +17,5 @@ class DataHandler:
         return cls.instance
 
     def find_user_by_email(self, email):
-        user = self.db[DBTables.Users]
+        user = self._db[DBTables.Users]
         return user.find_one({"email": email})
