@@ -14,7 +14,7 @@ user = db[DBTables.Users]
 
 
 class Register(Resource):
-    def get(self):
+    def post(self):
         email = request.form["email"]
         test = user.find_one({"email": email})
         if test:
