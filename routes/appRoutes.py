@@ -8,20 +8,18 @@ from flask_restful import Resource
 
 import utils
 from constants import Constants, Messages
+from dataHandler import DataHandler
 
 
 class Home(Resource):
     def get(self):
-        return "Home"
+        return "Home", 200
 
 
 class Dashboard(Resource):
     @jwt_required
     def get(self, uid):
-        lst = []
-        if uid != 34:
-            return "Dashboard", 200
-        return lst
+        return DataHandler().get_experiments_by_user_id(uid)
 
 
 class UploadExperiment(Resource):
@@ -38,8 +36,7 @@ class UploadExperiment(Resource):
             flash('No selected file')
             return redirect(request.url)
         if file:
-            db = 1
-            result, error_msg = utils.handle_input(db, file, uid)
+            result, error_msg = utils.handle_input(file, uid)
             if result:
                 return jsonify(message=Messages.UserAddedSuccessfully), 201
             elif error_msg:
@@ -79,7 +76,7 @@ class GetExperiment(Resource):
                     "result": loads_value
                 }
                 db = "demo"
-                utils.upload_data(db, to_upload, experiment_id)
+                utils.upload_data(to_upload, experiment_id)
             except Exception as e:
                 print(e)
 

@@ -24,6 +24,10 @@ class DataHandler:
         user = self._db[DBTables.Users]
         return user.find_one({"email": email, "password": password})
 
+    def get_experiments_by_user_id(self, uid):
+        experiments = self._db[DBTables.Experiments]
+        return experiments.find({}, {"uid": uid})
+
     def create_new_user(self, user_info):
         user = self._db[DBTables.Users]
         user.insert_one(user_info)
@@ -35,13 +39,3 @@ class DataHandler:
     def upload_data(self, name, results):
         data_table = self._db[name]
         data_table.insert_one(results)
-
-
-class StorageHandler:
-    def __init__(self):
-        pass
-
-    def __new__(cls):
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(StorageHandler, cls).__new__(cls)
-        return cls.instance
