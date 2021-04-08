@@ -8,6 +8,7 @@ from itertools import permutations
 import pandas as pd
 
 from constants import Errors, PluginNames, BrmsTypes, BrmsProperties
+from dataHandler import DataHandler
 
 
 def brms_exist(timeline):
@@ -254,10 +255,9 @@ def get_collection_count(coll_ref_stream):
     return count
 
 
-def handle_input(db, experiment_file, uid):
+def handle_input(experiment_file, uid):
     """
     Handle experiment file input
-    :param db:
     :param experiment_file:  experiment file (json)
     :param uid:  user id
     :return: result and error message
@@ -265,7 +265,7 @@ def handle_input(db, experiment_file, uid):
     result = ''
     error_msg = ''
     try:
-        result = upload_experiment(db, experiment_file, uid)
+        upload_experiment(experiment_file, uid)
     except Exception as e:
         error_msg = Errors.LOAD_EXPERIMENT_ERROR
         print(e)
@@ -273,24 +273,22 @@ def handle_input(db, experiment_file, uid):
     return result, error_msg
 
 
-def upload_data(db, data_dic, name):
+def upload_data(data_dic, name):
     """
     Upload trial result
-    :param db: db object
     :param data_dic: Result dictionary
     :param name: experiment name
     :return: None
     """
     try:
-        db.collection(name).document().set(data_dic)
+        DataHandler().upload_data(name, data_dic)
     except Exception as e:
         print('Failed to upload to ftp: ' + str(e))
 
 
-def upload_experiment(db, experiment_file, uid):
+def upload_experiment(experiment_file, uid):
     """
     Upload experiment
-    :param db: db object
     :param experiment_file:  Experiment file
     :param uid: User Id
     :return:
@@ -299,9 +297,7 @@ def upload_experiment(db, experiment_file, uid):
     parsed_json["uid"] = uid
     parsed_json["count"] = 0
     try:
-        doc_ref = db.collection("Experiments").document()
-        doc_ref.set(parsed_json)
-        return doc_ref.id
+        DataHandler().upload_experiment(parsed_json)
     except Exception as e:
         print('Failed to upload to ftp: ' + str(e))
 
