@@ -9,6 +9,7 @@ import pandas as pd
 
 from constants import Errors, PluginNames, BrmsTypes, BrmsProperties
 from dataHandler import DataHandler
+from storageHandler import StorageHandler
 
 
 def brms_exist(timeline):
@@ -84,30 +85,30 @@ def shuffle_list(lst):
     return new_list
 
 
-def order_brms(trial, bucket, experiment_name, count):
+def order_brms(trial, experiment_name, count):
     new_brms = []
     stimulus_dictionary = trial[BrmsProperties.StimulusDictionary]
     if trial[BrmsProperties.BrmsType] == BrmsTypes.Mix:
         values_list = get_mixed_value_list(stimulus_dictionary)
-        new_brms.extend(add_brms_from_list(trial, values_list, bucket, experiment_name, count))
+        new_brms.extend(add_brms_from_list(trial, values_list, experiment_name, count))
     elif trial[BrmsProperties.BrmsType] == BrmsTypes.Random:
         values_list = get_random_group(stimulus_dictionary)
-        new_brms.extend(add_brms_from_list(trial, values_list, bucket, experiment_name, count))
+        new_brms.extend(add_brms_from_list(trial, values_list, experiment_name, count))
     else:
         value_list = get_ordered_value_list(stimulus_dictionary)
-        new_brms.extend(add_brms_from_list(trial, value_list, bucket, experiment_name, count))
+        new_brms.extend(add_brms_from_list(trial, value_list, experiment_name, count))
     return new_brms
 
 
-def add_brms_from_list(trial, values_list, bucket, experiment_name, count):
+def add_brms_from_list(trial, values_list, experiment_name, count):
     all_trials = []
     for stimulus in values_list:
         trial_copy = deepcopy(trial)
         trial_copy[BrmsProperties.StimulusBlock] = stimulus[0]
         trial_copy[BrmsProperties.Count] = count
         trial_copy[BrmsProperties.File] = os.path.basename(stimulus[1])
-        blob = bucket.blob(experiment_name + "/" + trial_copy[BrmsProperties.File])
-        trial_copy[BrmsProperties.Stimulus] = blob.generate_signed_url(datetime.timedelta(seconds=300), method='GET')
+        image_blob = StorageHandler().get_image_blob(experiment_name + "/" + trial_copy[BrmsProperties.File])
+        trial_copy[BrmsProperties.Stimulus] = image_blob.generate_signed_url(datetime.timedelta(seconds=300), method='GET')
         trial_copy["stimulus_dictionary"] = None
         all_trials.append(trial_copy)
     return all_trials
@@ -123,7 +124,7 @@ def get_all_seq(lst):
     return list(permutations(lst, len(lst)))
 
 
-def organize_by_blocks(timeline, count, bucket, experiment_name):
+def organize_by_blocks(timeline, count, experiment_name):
     result_timeline = []
     block_division = {}
     try:
@@ -148,7 +149,7 @@ def organize_by_blocks(timeline, count, bucket, experiment_name):
 
     for item in new_timeline:
         if item[BrmsProperties.Type] == PluginNames.bRMS:
-            new_brms = order_brms(item, bucket, experiment_name, count)
+            new_brms = order_brms(item, experiment_name, count)
             for brms_item in new_brms:
                 final_timeline.append(brms_item)
         elif item[BrmsProperties.Type] == PluginNames.ImageButton or \
