@@ -39,3 +39,9 @@ class DataHandler:
     def upload_data(self, name, results):
         data_table = self._db[name]
         data_table.insert_one(results)
+
+    def export_experiment(self, experiment_id):
+        pass
+
+    def get_experiment_by_id(self, experiment_id):
+        pass

@@ -9,3 +9,6 @@ class StorageHandler:
 
     def get_image_blob(self, name):
         pass
+
+    def delete_stimulus_of_experiment(self, experiment_name):
+        pass

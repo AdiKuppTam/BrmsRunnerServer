@@ -45,22 +45,14 @@ class UploadExperiment(Resource):
 
 
 class GetExperiment(Resource):
-    def get(self):
-        # doc_ref = db.collection(u'Experiments').document(experiment_id)
-        # experiment = doc_ref.get().to_dict()
+    def get(self, experiment_id):
+        experiment = DataHandler().get_experiment_by_id(experiment_id)
         try_count = 0
         while try_count < 5:
             try:
-                print("hello")
-                # if experiment:
-                #     timeline = utils.organize_by_blocks(experiment['timeline'],
-                #                                         experiment['count'],
-                #                                         bucket,
-                #                                         experiment['name'])
-                #     return render_template('experiment_html.html',
-                #                            title='Experiment',
-                #                            timeline=timeline,
-                #                            background_color=experiment['background_color'])
+                return utils.organize_by_blocks(experiment['timeline'],
+                                                experiment['count'],
+                                                experiment['name']), 200
             except Exception as e:
                 print("Error: " + str(e))
                 continue
@@ -75,7 +67,6 @@ class GetExperiment(Resource):
                 to_upload = {
                     "result": loads_value
                 }
-                db = "demo"
                 utils.upload_data(to_upload, experiment_id)
             except Exception as e:
                 print(e)
@@ -84,11 +75,10 @@ class GetExperiment(Resource):
 class ExportExperimentResult(Resource):
     @jwt_required
     def post(self):
-        user_id = request.values.get("id_input")
-        print(user_id)
+        experiment_id = request.values.get("id_input")
         final_df = pd.DataFrame()
         try:
-            print(1)
+            final_df = DataHandler().export_experiment(experiment_id)
         except Exception as e:
             print("export bug: " + str(e))
             flash("There is a problem with export")

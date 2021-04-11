@@ -108,7 +108,8 @@ def add_brms_from_list(trial, values_list, experiment_name, count):
         trial_copy[BrmsProperties.Count] = count
         trial_copy[BrmsProperties.File] = os.path.basename(stimulus[1])
         image_blob = StorageHandler().get_image_blob(experiment_name + "/" + trial_copy[BrmsProperties.File])
-        trial_copy[BrmsProperties.Stimulus] = image_blob.generate_signed_url(datetime.timedelta(seconds=300), method='GET')
+        trial_copy[BrmsProperties.Stimulus] = image_blob.generate_signed_url(datetime.timedelta(seconds=300),
+                                                                             method='GET')
         trial_copy["stimulus_dictionary"] = None
         all_trials.append(trial_copy)
     return all_trials
@@ -303,7 +304,7 @@ def upload_experiment(experiment_file, uid):
         print('Failed to upload to ftp: ' + str(e))
 
 
-def extract_and_upload_stimulus(bucket, extract_folder, name):
+def extract_and_upload_stimulus(extract_folder, name):
     for file_name in os.listdir(extract_folder):
         try:
             extension = os.path.splitext(file_name)[1]
@@ -312,8 +313,8 @@ def extract_and_upload_stimulus(bucket, extract_folder, name):
                 try_count = 0
                 while not done and try_count < 5:
                     try:
-                        blob = bucket.blob(name + "/" + file_name)
-                        blob.upload_from_filename(extract_folder + file_name)
+                        image_blob = StorageHandler().get_image_blob(name + "/" + file_name)
+                        image_blob.upload_from_filename(extract_folder + file_name)
                         done = True
                         os.remove(extract_folder + file_name)
                         if try_count > 0:
@@ -325,8 +326,8 @@ def extract_and_upload_stimulus(bucket, extract_folder, name):
             print(e)
 
 
-def delete_stimulus_folder(bucket, experiment_name):
+def delete_stimulus_folder(experiment_name):
     try:
-        bucket.delete_blob("experiment_name/*")
+        StorageHandler().delete_stimulus_of_experiment(experiment_name)
     except Exception as e:
         print("Error on delete " + experiment_name + str(e))
