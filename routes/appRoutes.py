@@ -8,7 +8,7 @@ from flask_restful import Resource
 
 import utils
 from constants import Constants, Messages
-from dataHandler import DataHandler
+from handlers.dataHandler import DataHandler
 
 
 class Home(Resource):

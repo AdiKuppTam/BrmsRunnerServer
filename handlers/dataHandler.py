@@ -1,5 +1,6 @@
 import os
 
+import pandas as pd
 from pymongo import MongoClient
 
 from constants import EnvironmentVariables, DBTables
@@ -41,7 +42,9 @@ class DataHandler:
         data_table.insert_one(results)
 
     def export_experiment(self, experiment_id):
-        pass
+        results = self._db[DBTables.Results]
+        return pd.DataFrame(list(results.find({experiment_id: experiment_id})))
 
     def get_experiment_by_id(self, experiment_id):
-        pass
+        experiments = self._db[DBTables.Experiments]
+        experiments.find_one({"experiment_id": experiment_id})

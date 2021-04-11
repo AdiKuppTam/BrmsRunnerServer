@@ -8,8 +8,8 @@ from itertools import permutations
 import pandas as pd
 
 from constants import Errors, PluginNames, BrmsTypes, BrmsProperties
-from dataHandler import DataHandler
-from storageHandler import StorageHandler
+from handlers.dataHandler import DataHandler
+from handlers.storageHandler import StorageHandler
 
 
 def brms_exist(timeline):

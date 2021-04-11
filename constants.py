@@ -47,3 +47,4 @@ class BrmsProperties:
 class DBTables:
     Users = "Users"
     Experiments = "Experiments"
+    Results = "Results"

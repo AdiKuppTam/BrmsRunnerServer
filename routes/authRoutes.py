@@ -3,7 +3,7 @@ from flask_jwt_extended import create_access_token
 from flask_restful import Resource
 
 from constants import Errors, Messages
-from dataHandler import DataHandler
+from handlers.dataHandler import DataHandler
 
 
 class Register(Resource):
