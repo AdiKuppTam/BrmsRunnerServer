@@ -76,15 +76,15 @@ class ExportExperimentResult(Resource):
     @jwt_required
     def post(self):
         experiment_id = request.values.get("id_input")
-        final_df = pd.DataFrame()
+        result_data_frame = pd.DataFrame()
         try:
-            final_df = DataHandler().export_experiment(experiment_id)
+            result_data_frame = DataHandler().export_experiment(experiment_id)
         except Exception as e:
             print("export bug: " + str(e))
             flash("There is a problem with export")
         finally:
             csv_file_name = "Experiment_Result.csv"
-            final_df.to_csv(csv_file_name, mode='w')
+            result_data_frame.to_csv(csv_file_name, mode='w')
             return send_file(csv_file_name,
                              mimetype='text/csv',
                              attachment_filename=csv_file_name,
