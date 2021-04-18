@@ -48,3 +48,7 @@ class DBTables:
     Users = "Users"
     Experiments = "Experiments"
     Results = "Results"
+
+
+class StorageHandlerConst:
+    Title = "title"

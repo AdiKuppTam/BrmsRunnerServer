@@ -1,5 +1,7 @@
 from pydrive.drive import GoogleDrive as Gd
 from pydrive.auth import GoogleAuth as Ga
+import os
+from constants import StorageHandlerConst as SHC
 
 
 class StorageHandler:
@@ -27,7 +29,11 @@ class StorageHandler:
         :param file_path: the sile path
         :return: True if success, False else
         """
-        self.drive.CreateFile()
+        file_name = os.path.basename(file_path)
+        gfile = self.drive.CreateFile({SHC.Title: file_name})
+        file = open(file_path)
+        gfile.setContentFile(file)
+        gfile.upload()
 
     def upload_directory(self, directory_path):
         """
@@ -38,6 +44,13 @@ class StorageHandler:
         self.drive.CreateFile()
 
     def delete_file(self, file_name):
+        """
+        deletes a filename
+        :param file_name: the name of the file we are about to delete
+        :return: True if success, False else
+        """
+
+    def restore_file(self, file_name):
         """
         deletes a filename
         :param file_name: the name of the file we are about to delete
