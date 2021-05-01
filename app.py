@@ -32,15 +32,15 @@ def icon():
     return send_from_directory(app.static_folder, 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
-api.add_resource(Login, '/login', methods=["POST"])
-api.add_resource(Register, '/register', methods=["POST"])
+api.add_resource(Login, '/login')
+api.add_resource(Register, '/register')
 
 api.add_resource(Home, '/')
 api.add_resource(Dashboard, '/dashboard/<uid>')
-api.add_resource(UploadExperiment, '/upload/<uid>', methods=["POST"])
-api.add_resource(GetExperiment, '/experiment/<experiment_id>', methods=["GET", "POST"])
-api.add_resource(ExportExperimentResult, '/export', methods=["POST"])
-api.add_resource(UploadImagesToExperiment, '/upload_images', methods=["POST"])
+api.add_resource(UploadExperiment, '/upload/<uid>')
+api.add_resource(GetExperiment, '/experiment/<experiment_id>')
+api.add_resource(ExportExperimentResult, '/export')
+api.add_resource(UploadImagesToExperiment, '/upload_images')
 
 if __name__ == '__main__':
     app.run(debug=True)

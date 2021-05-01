@@ -1,8 +1,8 @@
-from flask import request, jsonify
+from flask import request, jsonify, make_response
 from flask_jwt_extended import create_access_token
 from flask_restful import Resource
 
-from constants import Errors, Messages
+from constants import Errors, Messages, ResponseStatus
 from handlers.dataHandler import DataHandler
 
 
@@ -32,6 +32,12 @@ class Login(Resource):
         test = DataHandler().find_user_by_email_and_password(email, password)
         if test:
             access_token = create_access_token(identity=email)
-            return jsonify(message=Messages.LoginSucceeded, access_token=access_token), 201
+            response_object = {"message": Messages.LoginSucceeded, "access_token": access_token}
+            response_status = ResponseStatus.Success
         else:
-            return jsonify(message=Errors.AuthenticationErrors.BadEmailOrPassword), 401
+            response_object = {"message": Errors.AuthenticationErrors.BadEmailOrPassword}
+            response_status = ResponseStatus.Unauthorized
+
+        response = make_response(jsonify(response_object), response_status)
+        response.headers["Content-Type"] = "application/json"
+        return response

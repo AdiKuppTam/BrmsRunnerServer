@@ -48,3 +48,8 @@ class DBTables:
     Users = "Users"
     Experiments = "Experiments"
     Results = "Results"
+
+
+class ResponseStatus:
+    Success = 201
+    Unauthorized = 401
