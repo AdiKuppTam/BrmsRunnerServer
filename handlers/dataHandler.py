@@ -31,9 +31,7 @@ class DataHandler:
 
     def create_new_user(self, user_info):
         users = self._db[DBTables.Users]
-        print(user_info)
-        x = users.insert_one(user_info)
-        print(x)
+        users.insert_one(user_info)
 
     def upload_experiment(self, experiment_details):
         experiments = self._db[DBTables.Experiments]
