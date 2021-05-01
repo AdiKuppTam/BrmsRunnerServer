@@ -51,5 +51,7 @@ class DBTables:
 
 
 class ResponseStatus:
-    Success = 201
+    Success = 200
+    UserCreated = 201
     Unauthorized = 401
+    UserAlreadyExist = 409

@@ -10,7 +10,7 @@ class DataHandler:
     def __init__(self):
         conn_str = os.environ[EnvironmentVariables.CONNECTION_STRING]
         self._client = MongoClient(conn_str)
-        self._db = self._client.rms
+        self._db = self._client.RMS
 
     def __new__(cls):
         if not hasattr(cls, 'instance'):
@@ -30,8 +30,10 @@ class DataHandler:
         return experiments.find({}, {"uid": uid})
 
     def create_new_user(self, user_info):
-        user = self._db[DBTables.Users]
-        user.insert_one(user_info)
+        users = self._db[DBTables.Users]
+        print(user_info)
+        x = users.insert_one(user_info)
+        print(x)
 
     def upload_experiment(self, experiment_details):
         experiments = self._db[DBTables.Experiments]

@@ -6,10 +6,17 @@ from copy import deepcopy
 from itertools import permutations
 
 import pandas as pd
+from flask import make_response, jsonify
 
 from constants import Errors, PluginNames, BrmsTypes, BrmsProperties
 from handlers.dataHandler import DataHandler
 from handlers.storageHandler import StorageHandler
+
+
+def create_response(response_content, response_status):
+    response = make_response(jsonify(response_content), response_status)
+    response.headers["Content-Type"] = "application/json"
+    return response
 
 
 def brms_exist(timeline):
