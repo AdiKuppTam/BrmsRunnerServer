@@ -1,5 +1,5 @@
 /**
- * jspsych plugin for showing animations that mimic the experiment described in
+ * jspsych plugin for showing animations that mimic the experiment.py described in
  *
  * Fiser, J., & Aslin, R. N. (2002). Statistical learning of higher-order
  * temporal structure from visual shape sequences. Journal of Experimental

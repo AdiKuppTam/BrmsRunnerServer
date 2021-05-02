@@ -3,11 +3,13 @@ import zipfile
 
 import pandas as pd
 from flask import request, flash, redirect, jsonify, send_file
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful import Resource
+from mongoengine import DoesNotExist
 
 import utils
 from constants import Constants, Messages
+from database.experiment import Experiment
 from handlers.dataHandler import DataHandler
 
 
@@ -16,10 +18,14 @@ class Home(Resource):
         return "Home", 200
 
 
-class Dashboard(Resource):
-    @jwt_required
-    def get(self, uid):
-        return DataHandler().get_experiments_by_user_id(uid)
+class DashboardApi(Resource):
+    @jwt_required()
+    def get(self):
+        uid = get_jwt_identity()
+        try:
+            return Experiment.objects.get(uid=uid)
+        except DoesNotExist:
+            return []
 
 
 class UploadExperiment(Resource):

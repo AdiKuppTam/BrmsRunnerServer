@@ -266,8 +266,8 @@ def get_collection_count(coll_ref_stream):
 
 def handle_input(experiment_file, uid):
     """
-    Handle experiment file input
-    :param experiment_file:  experiment file (json)
+    Handle experiment.py file input
+    :param experiment_file:  experiment.py file (json)
     :param uid:  user id
     :return: result and error message
     """
@@ -286,7 +286,7 @@ def upload_data(data_dic, name):
     """
     Upload trial result
     :param data_dic: Result dictionary
-    :param name: experiment name
+    :param name: experiment.py name
     :return: None
     """
     try:
@@ -297,7 +297,7 @@ def upload_data(data_dic, name):
 
 def upload_experiment(experiment_file, uid):
     """
-    Upload experiment
+    Upload experiment.py
     :param experiment_file:  Experiment file
     :param uid: User Id
     :return:

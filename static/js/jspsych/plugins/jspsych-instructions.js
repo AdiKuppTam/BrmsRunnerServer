@@ -1,7 +1,7 @@
 /* jspsych-text.js
  * Josh de Leeuw
  *
- * This plugin displays text (including HTML formatted strings) during the experiment.
+ * This plugin displays text (including HTML formatted strings) during the experiment.py.
  * Use it to show instructions, provide performance feedback, etc...
  *
  * documentation: docs.jspsych.org
