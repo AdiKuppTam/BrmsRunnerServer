@@ -575,7 +575,7 @@ jsPsych.plugins["bRMS"] = (function () {
                     end_trial();
                 };
                 let isStare = trial.trial_type !== "RMS";
-                //Function for start experiment
+                //Function for start experiment.py
                 let start_trial = function () {
                     console.log("start_trial");
                     if (trial.fixation_visible) {

@@ -13,7 +13,7 @@ window.jsPsych = (function () {
 
     // options
     let opts = {};
-    // experiment timeline
+    // experiment.py timeline
     let timeline;
     // flow control
     let global_trial_index = 0;
@@ -22,9 +22,9 @@ window.jsPsych = (function () {
     // target DOM element
     let DOM_container;
     let DOM_target;
-    // time that the experiment began
+    // time that the experiment.py began
     let exp_start_time;
-    // is the experiment paused?
+    // is the experiment.py paused?
     let paused = false;
     let waiting = false;
     // done loading?
@@ -39,7 +39,7 @@ window.jsPsych = (function () {
 
     core.init = function (options) {
         if (typeof options.timeline === 'undefined') {
-            console.error('No timeline declared in jspsych.init. Cannot start experiment.')
+            console.error('No timeline declared in jspsych.init. Cannot start experiment.py.')
         }
 
         // reset variables
@@ -123,12 +123,12 @@ window.jsPsych = (function () {
         divDpi_element.style.visibility = "hidden";
         DOM_container.appendChild(divDpi_element);
 
-        // create experiment timeline
+        // create experiment.py timeline
         timeline = new TimelineNode({
             timeline: opts.timeline
         });
         // below code resets event listeners that may have lingered from
-        // a previous incomplete experiment loaded in same DOM.
+        // a previous incomplete experiment.py loaded in same DOM.
         jsPsych.pluginAPI.reset(opts.display_element);
         // create keyboard event listeners
         jsPsych.pluginAPI.createKeyboardEventListeners(opts.display_element);
@@ -138,7 +138,7 @@ window.jsPsych = (function () {
         checkExclusions(opts.exclusions,
             function () {
                 // success! user can continue...
-                // start experiment, with or without preloading
+                // start experiment.py, with or without preloading
                 if (opts.auto_preload) {
                     jsPsych.pluginAPI.autoPreload(timeline, startExperiment, opts.preload_images, opts.preload_audio, opts.show_preload_progress_bar);
                     if (opts.max_load_time > 0) {
@@ -210,7 +210,7 @@ window.jsPsych = (function () {
             current_trial.on_finish(trial_data_values);
         }
 
-        // handle callback at whole-experiment level
+        // handle callback at whole-experiment.py level
         opts.on_trial_finish(trial_data_values);
 
         // after the above callbacks are complete, then the data should be finalized
@@ -736,7 +736,7 @@ window.jsPsych = (function () {
     }
 
     function nextTrial() {
-        // if experiment is paused, don't do anything.
+        // if experiment.py is paused, don't do anything.
         if (paused) {
             waiting = true;
             return;
@@ -754,7 +754,7 @@ window.jsPsych = (function () {
             updateProgressBar();
         }
 
-        // check if experiment is over
+        // check if experiment.py is over
         if (complete) {
             finishExperiment();
             return;
@@ -775,7 +775,7 @@ window.jsPsych = (function () {
         // get default values for parameters
         setDefaultValues(trial);
 
-        // call experiment wide callback
+        // call experiment.py wide callback
         opts.on_trial_start(trial);
 
         // call trial specific callback if it exists
@@ -845,7 +845,7 @@ window.jsPsych = (function () {
     }
 
     function loadFail() {
-        DOM_target.innerHTML = '<p>The experiment failed to load.</p>';
+        DOM_target.innerHTML = '<p>The experiment.py failed to load.</p>';
     }
 
     function checkExclusions(exclusions, success, fail) {
@@ -863,9 +863,9 @@ window.jsPsych = (function () {
                     var w = window.innerWidth;
                     var h = window.innerHeight;
                     if (w < mw || h < mh) {
-                        var msg = '<p>Your browser window is too small to complete this experiment. ' +
+                        var msg = '<p>Your browser window is too small to complete this experiment.py. ' +
                             'Please maximize the size of your browser window. If your browser window is already maximized, ' +
-                            'you will not be able to complete this experiment.</p>' +
+                            'you will not be able to complete this experiment.py.</p>' +
                             '<p>The minimum width is ' + mw + 'px. Your current width is ' + w + 'px.</p>' +
                             '<p>The minimum height is ' + mh + 'px. Your current height is ' + h + 'px.</p>';
                         core.getDisplayElement().innerHTML = msg;
@@ -886,7 +886,7 @@ window.jsPsych = (function () {
             } else {
                 clear = false;
                 var msg = '<p>Your browser does not support the WebAudio API, which means that you will not ' +
-                    'be able to complete the experiment.</p><p>Browsers that support the WebAudio API include ' +
+                    'be able to complete the experiment.py.</p><p>Browsers that support the WebAudio API include ' +
                     'Chrome, Firefox, Safari, and Edge.</p>';
                 core.getDisplayElement().innerHTML = msg;
                 fail();

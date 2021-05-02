@@ -18,12 +18,12 @@ jsPsych.plugins.fullscreen = (function() {
         pretty_name: 'Fullscreen mode',
         default: true,
         array: false,
-        description: 'If true, experiment will enter fullscreen mode. If false, the browser will exit fullscreen mode.'
+        description: 'If true, experiment.py will enter fullscreen mode. If false, the browser will exit fullscreen mode.'
       },
       message: {
         type: jsPsych.plugins.parameterType.STRING,
         pretty_name: 'Message',
-        default: '<p>The experiment will switch to full screen mode when you press the button below</p>',
+        default: '<p>The experiment.py will switch to full screen mode when you press the button below</p>',
         array: false,
         description: 'HTML content to display above the button to enter fullscreen mode.'
       },

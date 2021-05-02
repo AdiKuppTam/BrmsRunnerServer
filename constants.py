@@ -1,6 +1,7 @@
 class Constants:
     UPLOAD_FILE_INPUT = "FILE_INPUT"
     JWT_SECRET_KEY = "JWT_SECRET_KEY"
+    MONGODB_SETTINGS = "MONGODB_SETTINGS"
 
 
 class EnvironmentVariables:

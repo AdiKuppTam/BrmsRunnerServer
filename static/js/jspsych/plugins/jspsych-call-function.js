@@ -1,6 +1,6 @@
 /**
  * jspsych-call-function
- * plugin for calling an arbitrary function during a jspsych experiment
+ * plugin for calling an arbitrary function during a jspsych experiment.py
  * Josh de Leeuw
  *
  * documentation: docs.jspsych.org
