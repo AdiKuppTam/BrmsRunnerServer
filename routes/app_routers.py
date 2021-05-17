@@ -29,15 +29,14 @@ class DashboardApi(Resource):
 
 
 class UploadExperiment(Resource):
-    @jwt_required
-    def post(self, uid):
-        # check if the post request has the file part
+    @jwt_required()
+    def post(self):
+        uid = get_jwt_identity()
         if Constants.UPLOAD_FILE_INPUT not in request.files:
             flash('No file part')
             return redirect(request.url)
         file = request.files[Constants.UPLOAD_FILE_INPUT]
-        # if user does not select file, browser also
-        # submit a empty part without filename
+
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
