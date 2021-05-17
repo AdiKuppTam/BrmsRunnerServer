@@ -11,6 +11,7 @@ class EnvironmentVariables:
 
 class Errors:
     LOAD_EXPERIMENT_ERROR = "Experiment load failed"
+    ExperimentDoesNotExit = "Experiment does not exit"
 
     class AuthenticationErrors:
         UserAlreadyExist = "User Already Exist"

@@ -8,7 +8,7 @@ from flask_restful import Resource
 from mongoengine import DoesNotExist
 
 import utils
-from constants import Constants, Messages
+from constants import Constants, Messages, Errors
 from database.experiment import Experiment
 from handlers.dataHandler import DataHandler
 
@@ -28,7 +28,8 @@ class DashboardApi(Resource):
             return []
 
 
-class UploadExperiment(Resource):
+
+class UploadExperimentApi(Resource):
     @jwt_required()
     def post(self):
         uid = get_jwt_identity()
@@ -36,7 +37,6 @@ class UploadExperiment(Resource):
             flash('No file part')
             return redirect(request.url)
         file = request.files[Constants.UPLOAD_FILE_INPUT]
-
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
@@ -49,21 +49,21 @@ class UploadExperiment(Resource):
         return jsonify(message=Messages.UserAddedSuccessfully), 400
 
 
-class GetExperiment(Resource):
+class GetExperimentApi(Resource):
     def get(self, experiment_id):
-        experiment = DataHandler().get_experiment_by_id(experiment_id)
+        experiment = Experiment.objects.get(id=experiment_id)
         try_count = 0
         while try_count < 5:
             try:
-                return utils.organize_by_blocks(experiment['timeline'],
-                                                experiment['count'],
-                                                experiment['name']), 200
+                return utils.organize_by_blocks(experiment[0]['timeline'],
+                                                experiment[0]['count'],
+                                                experiment[0]['name']), 200
             except Exception as e:
-                print("Error: " + str(e))
+                print(str(e))
                 continue
             finally:
                 try_count += 1
-        return jsonify("Experiment does not exit"), 404
+        return jsonify(Errors.ExperimentDoesNotExit), 404
 
     def post(self, experiment_id):
         if request.data:
@@ -77,8 +77,8 @@ class GetExperiment(Resource):
                 print(e)
 
 
-class ExportExperimentResult(Resource):
-    @jwt_required
+class ExportExperimentResultApi(Resource):
+    @jwt_required()
     def post(self):
         experiment_id = request.values.get("id_input")
         result_data_frame = pd.DataFrame()
@@ -96,8 +96,8 @@ class ExportExperimentResult(Resource):
                              as_attachment=True)
 
 
-class UploadImagesToExperiment(Resource):
-    @jwt_required
+class UploadImagesToExperimentApi(Resource):
+    @jwt_required()
     def post(self):
         # check if the post request has the file part
         if 'imagesInput' not in request.files:

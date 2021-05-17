@@ -7,7 +7,6 @@ from flask_restful import Api
 
 import __data__ as data
 from constants import Constants, EnvironmentVariables
-from assets.errors import errors
 from database.db import initialize_db
 from routes.all_routes import initialize_routes
 
